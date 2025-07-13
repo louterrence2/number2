@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Global Macro Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .rating-below { background-color: #34d399; color: #064e3b; } /* emerald-400 / emerald-800 */
+        .rating-normal { background-color: #facc15; color: #713f12; } /* yellow-400 / amber-800 */
+        .rating-above { background-color: #f87171; color: #7f1d1d; } /* red-400 / red-800 */
+        
+        .card-below {
+            border: 2px solid #34d399;
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">The Global Macro Dashboard</h1>
+            <p class="text-lg text-gray-400">A Cyclical Analysis of Global Commodities & Shipping.</p>
+        </header>
+
+        <!-- Global Spot Market Indicators -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-blue-400 pb-2">Global Spot Market Indicators</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-800 rounded-2xl p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">Baltic Dry Index (Shipping)</h3>
+                    <p id="bdi-price" class="text-5xl font-bold text-blue-300">1,950</p>
+                    <p id="bdi-status" class="text-lg font-semibold text-yellow-400">Normal</p>
+                </div>
+                <div class="bg-gray-800 rounded-2xl p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">Crude Oil (WTI)</h3>
+                    <p id="wti-price" class="text-5xl font-bold text-lime-300">$80.50</p>
+                    <p id="wti-status" class="text-lg font-semibold text-yellow-400">Normal</p>
+                </div>
+                <div class="bg-gray-800 rounded-2xl p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">US Natural Gas (Henry Hub)</h3>
+                    <p id="gas-price" class="text-5xl font-bold text-green-400">$2.90</p>
+                    <p id="gas-status" class="text-lg font-semibold text-green-400">Low</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Commodities Grid -->
+        <div id="commodities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Commodity cards will be injected here by JavaScript -->
+        </div>
+        
+        <!-- Model Explanation -->
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-indigo-400 pb-2">How The Model Works</h2>
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-lg">
+                <p class="mb-4 text-gray-300">This model is based on **inflation-adjusted mean reversion**. It analyzes over 50 years of price history for each commodity to find its long-term average price in today's dollars. It then compares the current price to that historical average.</p>
+                <ul class="list-disc list-inside space-y-3 text-gray-400">
+                    <li><strong class="text-green-400">Below Value (Buy Zone):</strong> The current price is significantly below its long-term inflation-adjusted average. This suggests the industry is under stress, production may be uneconomical, and supply could shrink, creating a potential long-term buying opportunity for the underlying producers.</li>
+                    <li><strong class="text-yellow-400">Normal Range:</strong> The price is trading within its typical historical band. The market is relatively balanced.</li>
+                    <li><strong class="text-red-400">Above Value (Sell Zone):</strong> The price is significantly above its long-term average, suggesting the market is euphoric and the cycle may be near a peak.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p><strong>Disclaimer:</strong> This tool is for educational and informational purposes only and does not constitute financial advice. The analysis is based on historical data and standard economic models, which may not predict future results. Always conduct your own due diligence.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const commodityData = [
+            { name: "Natural Gas (HH)", category: "Energy", currentPrice: 2.90, meanPrice: 4.50, stdDev: 1.50, unit: "/MMBtu", thesis: "Deep in the 'Below Value' zone. Current prices are below the breakeven cost for many producers, forcing supply cuts. This is a classic setup for a sharp price recovery as the market rebalances. Low-cost producers are exceptionally attractive here." },
+            { name: "Potash", category: "Agriculture", currentPrice: 240, meanPrice: 350, stdDev: 150, unit: "/ton", thesis: "Prices have fallen from their conflict-driven peaks back into the 'Below Value' zone. This is pressuring fertilizer producers but suggests a long-term cyclical low may be forming as farmers must eventually replenish soil nutrients." },
+            { name: "Lumber", category: "Industrial", currentPrice: 450, meanPrice: 600, stdDev: 200, unit: "/1k bf", thesis: "After a massive spike post-COVID, prices have crashed into the 'Below Value' zone. This indicates building material companies and sawmills are under significant stress, potentially creating a strong cyclical buying opportunity." },
+            { name: "Corn & Soybeans", category: "Agriculture", currentPrice: 4.50, meanPrice: 5.50, stdDev: 1.50, unit: "/bu", thesis: "Grains have fallen back into the 'Below Value' zone due to strong harvests and normalizing supply chains. This is putting significant pressure on the farming sector and related equipment companies." },
+            { name: "Uranium", category: "Energy", currentPrice: 90, meanPrice: 75, stdDev: 25, unit: "/lb", thesis: "After a decade of being 'Below Value', uranium has had a powerful rally into the 'Normal Range' due to a renewed global push for nuclear power. The deep value opportunity has passed, but the long-term supply/demand fundamentals remain very strong." },
+            { name: "Crude Oil (WTI)", category: "Energy", currentPrice: 80.50, meanPrice: 70, stdDev: 20, unit: "/bbl", thesis: "Trading firmly in the 'Normal Range'. It is neither historically cheap nor expensive. This suggests the market is fairly balanced. The investment thesis shifts from deep value to finding the most efficient operators." },
+            { name: "Silver", category: "Precious Metals", currentPrice: 29, meanPrice: 26, stdDev: 8, unit: "/oz", thesis: "Trading in its 'Normal Range'. Silver has both monetary and industrial characteristics. Its valuation is fair, but it possesses more volatility and potential upside than gold if industrial or investment demand surges." },
+            { name: "Gold", category: "Precious Metals", currentPrice: 2350, meanPrice: 2100, stdDev: 400, unit: "/oz", thesis: "Trading in its 'Normal Range'. As a monetary metal, its value is driven more by interest rates and geopolitical fear than industrial supply/demand. The model does not show a strong directional signal." },
+            { name: "Copper", category: "Industrial", currentPrice: 4.50, meanPrice: 3.75, stdDev: 1.00, unit: "/lb", thesis: "At the high end of its 'Normal Range'. Strong demand from the green energy transition (EVs, wiring) provides a powerful long-term tailwind, but the current price already reflects much of this optimism." },
+            { name: "Coffee", category: "Agriculture", currentPrice: 2.20, meanPrice: 1.80, stdDev: 0.50, unit: "/lb", thesis: "At the high end of its 'Normal Range'. Coffee prices are highly susceptible to weather events in key growing regions. The current price is profitable for farmers but vulnerable to a correction if a good harvest materializes." }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('commodities-grid');
+
+        // --- FUNCTIONS ---
+        function calculateValuation(item) {
+            const belowValueMax = item.meanPrice - item.stdDev;
+            const aboveValueMin = item.meanPrice + item.stdDev;
+
+            if (item.currentPrice < belowValueMax) {
+                return { text: 'Below Value', class: 'rating-below', cardClass: 'card-below' };
+            }
+            if (item.currentPrice > aboveValueMin) {
+                return { text: 'Above Value', class: 'rating-above', cardClass: 'bg-gray-800 border-gray-700' };
+            }
+            return { text: 'Normal Range', class: 'rating-normal', cardClass: 'bg-gray-800 border-gray-700' };
+        }
+        
+        function renderCommodityCard(item) {
+            const valuation = calculateValuation(item);
+            const belowValueMax = (item.meanPrice - item.stdDev).toFixed(2);
+            const normalRangeLow = (item.meanPrice - item.stdDev).toFixed(2);
+            const normalRangeHigh = (item.meanPrice + item.stdDev).toFixed(2);
+            const aboveValueMin = (item.meanPrice + item.stdDev).toFixed(2);
+
+            return `
+                <div class="rounded-2xl border ${valuation.cardClass} p-6 flex flex-col">
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                             <div>
+                                <h3 class="text-xl font-bold text-white">${item.name}</h3>
+                                <p class="text-md text-indigo-300">${item.category}</p>
+                            </div>
+                             <div class="text-right">
+                                <p class="text-2xl font-bold text-white">$${item.currentPrice.toFixed(2)}</p>
+                                <p class="text-sm text-gray-400">Current Price</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4 text-center bg-gray-900/50 p-3 rounded-lg">
+                            <p class="text-gray-400 text-sm">Current Signal</p>
+                            <p class="font-bold text-2xl mt-1 px-3 py-1 inline-block rounded-full ${valuation.class}">${valuation.text}</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Historical Valuation Ranges</h4>
+                            <div class="text-xs space-y-1 bg-gray-900/50 p-3 rounded-lg">
+                                <div class="grid grid-cols-2 gap-2 text-green-400"><span>Below Value:</span><span class="font-mono text-right">&lt; $${belowValueMax}</span></div>
+                                <div class="grid grid-cols-2 gap-2 text-yellow-400"><span>Normal Range:</span><span class="font-mono text-right">$${normalRangeLow} - $${normalRangeHigh}</span></div>
+                                <div class="grid grid-cols-2 gap-2 text-red-400"><span>Above Value:</span><span class="font-mono text-right">&gt; $${aboveValueMin}</span></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Investment Thesis</h4>
+                            <p class="text-sm text-gray-400">${item.thesis}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAllCards() {
+            const ratingOrder = { 'Below Value': 1, 'Normal Range': 2, 'Above Value': 3 };
+            commodityData.sort((a, b) => {
+                const valA = calculateValuation(a).text;
+                const valB = calculateValuation(b).text;
+                return ratingOrder[valA] - ratingOrder[valB] || a.name.localeCompare(b.name);
+            });
+            
+            grid.innerHTML = '';
+            commodityData.forEach(item => {
+                grid.innerHTML += renderCommodityCard(item);
+            });
+        }
+
+        // --- INITIALIZATION ---
+        renderAllCards();
+    </script>
+</body>
+</html>
+

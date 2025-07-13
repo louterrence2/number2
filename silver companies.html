@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Producers Intrinsic Value Tracker (Definitive)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .valuation-table td, .valuation-table th {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid #4b5563; /* gray-600 */
+        }
+        .header-cell {
+            background-color: #374151; /* gray-700 */
+            font-weight: 600;
+        }
+        .price-input {
+            background-color: #1f2937; /* gray-800 */
+            border: 1px solid #4b5563; /* gray-600 */
+            color: #a3e635; /* lime-400 */
+            text-align: center;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            width: 180px;
+        }
+        .bankruptcy-risk {
+            color: #ef4444; /* red-500 */
+            font-weight: bold;
+        }
+        .debt-healthy { color: #34d399; }
+        .debt-manageable { color: #facc15; }
+        .debt-concern { color: #f87171; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Silver Producers Intrinsic Value Tracker</h1>
+            <p class="text-lg text-gray-400">Valuation, Debt, and Management Analysis.</p>
+        </header>
+
+        <!-- Price Input -->
+        <div class="grid grid-cols-1 mb-8">
+            <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 flex flex-col items-center justify-center">
+                <h2 class="text-xl text-gray-300 mb-2">Silver Price ($/oz)</h2>
+                <input type="number" id="silver-price" class="text-4xl font-bold price-input" value="28.00" oninput="renderAllCards()">
+            </div>
+        </div>
+        
+        <!-- Companies Grid -->
+        <div id="companies-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Company cards will be injected here by JavaScript -->
+        </div>
+        
+        <!-- Model Explanation -->
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-indigo-400 pb-2">Valuation & Metrics Explained</h2>
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-lg">
+                <h3 class="text-2xl font-bold text-indigo-300 mb-3">How to Read the Data</h3>
+                <ul class="list-disc list-inside space-y-3 text-gray-400">
+                    <li><strong class="text-white">Net Debt / FCF:</strong> Shows how many years it would take to pay off all debt with free cash flow. Lower is better. A ratio under 2.5x is generally considered healthy for a miner.</li>
+                    <li><strong class="text-white">EV / FCF:</strong> A key valuation metric. It shows how the market values a company relative to the cash it generates. A lower number (e.g., under 15x) can suggest the company is undervalued.</li>
+                     <li><strong class="text-white">Intrinsic Value Model:</strong> Estimates the company's market cap at different silver prices using a standard EV/EBITDA methodology, showing how sensitive the value is to the commodity price.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p><strong>Disclaimer:</strong> Company financial data is compiled from the latest available public financial reports and is not real-time. The valuation model and management notes use standard assumptions and public information, and are for educational purposes only. This does not constitute financial advice. Always conduct your own due diligence.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Production in millions of ounces, financials in USD millions.
+        const companyData = [
+            { name: "Wheaton Precious Metals", ticker: "WPM", silverEqOz: 35, netDebt: -700, ebitda: 850, fcf: 650, marketCap: 24000, isRoyalty: true, mgmtNotes: "Considered best-in-class management. Excellent capital allocators with a strong history of high-margin, value-accretive deals. High ROIC. Focused on shareholder returns through a reliable dividend linked to cash flows." },
+            { name: "Pan American Silver", ticker: "PAAS", silverOz: 20, goldOz: 900000, netDebt: 300, ebitda: 600, fcf: 150, marketCap: 3800, notes: "Large producer of silver and gold.", mgmtNotes: "Experienced operators with a long history in Latin America. Management has been focused on integrating large acquisitions and optimizing operations. Can be complex to analyze due to many assets." },
+            { name: "First Majestic Silver", ticker: "AG", silverOz: 10, goldOz: 100000, netDebt: -50, ebitda: 150, fcf: -100, marketCap: 2000, notes: "Primarily silver-focused producer with mines in Mexico.", mgmtNotes: "Known for being very bullish on silver and maintaining high exposure to the silver price. Praised by silver enthusiasts, but has faced operational challenges and inconsistent FCF generation." },
+            { name: "Hecla Mining", ticker: "HL", silverOz: 15, goldOz: 180000, netDebt: 600, ebitda: 350, fcf: 50, marketCap: 3200, notes: "Oldest US precious metals miner; significant gold production.", mgmtNotes: "Long-tenured, experienced management team. Praised for operational expertise in difficult underground mines. Focus on growing US-based production, which is seen as a major de-risking factor." },
+            { name: "SSR Mining", ticker: "SSRM", silverOz: 7, goldOz: 700000, netDebt: -400, ebitda: 550, fcf: 250, marketCap: 1200, notes: "Gold-focused producer with significant silver by-product.", mgmtNotes: "Management has focused on a strong balance sheet (net cash) and shareholder returns. However, recently faced a major operational setback at a key mine, which has put their crisis management and operational oversight under scrutiny." },
+            { name: "Endeavour Silver", ticker: "EXK", silverOz: 5, goldOz: 40000, netDebt: -20, ebitda: 50, fcf: -50, marketCap: 500, notes: "Mid-tier silver producer focused on Mexico.", mgmtNotes: "Management team has a strong exploration and development track record. Currently focused on building a major new mine (Terronera) which is critical for future growth, but development carries execution risk." },
+            { name: "Coeur Mining", ticker: "CDE", silverOz: 10, goldOz: 300000, netDebt: 350, ebitda: 200, fcf: -150, marketCap: 1500, notes: "US-based producer with operations across North America.", mgmtNotes: "Management has successfully transitioned the company's portfolio towards longer-life assets in safe jurisdictions (USA/Canada). However, the company has historically carried higher debt and negative FCF during investment phases." },
+            { name: "Fresnillo plc", ticker: "FRES.L", silverOz: 50, goldOz: 600000, netDebt: 800, ebitda: 900, fcf: 100, marketCap: 5000, notes: "World's largest primary silver producer, based in Mexico.", mgmtNotes: "Deep operational experience in Mexico. As a large, established producer, they are generally seen as conservative and stable operators, but have faced challenges with declining ore grades and rising costs recently." }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('companies-grid');
+        const silverPriceInput = document.getElementById('silver-price');
+
+        // --- FUNCTIONS ---
+        function formatCurrency(num) {
+            if (Math.abs(num) >= 1.0e+9) return (num / 1.0e+9).toFixed(1) + 'B';
+            if (Math.abs(num) >= 1.0e+6) return (num / 1.0e+6).toFixed(1) + 'M';
+            return num.toFixed(2);
+        }
+
+        function calculateValuation(company, targetSilverPrice) {
+            const BASE_SILVER_PRICE = 28;
+            const EV_EBITDA_MULTIPLE = company.isRoyalty ? 15.0 : 7.5;
+            const FLOW_THROUGH_RATE = 0.80; 
+            const priceChangePerOunce = targetSilverPrice - BASE_SILVER_PRICE;
+            const productionOunces = (company.silverEqOz || company.silverOz) * 1000000;
+            const changeInEbitda = productionOunces * priceChangePerOunce * FLOW_THROUGH_RATE;
+            const projectedEbitda = (company.ebitda * 1000000) + changeInEbitda;
+            const projectedEnterpriseValue = projectedEbitda * EV_EBITDA_MULTIPLE;
+            
+            if (projectedEnterpriseValue < (company.netDebt * 1000000)) {
+                return { value: 'Bankruptcy Risk', isRisk: true };
+            }
+            const projectedMarketCap = projectedEnterpriseValue - (company.netDebt * 1000000);
+            return { value: formatCurrency(projectedMarketCap), isRisk: false };
+        }
+
+        function renderCompanyCard(company) {
+            const priceScenarios = [20, 25, 30, 35, 40, 50];
+            const enterpriseValue = company.marketCap + (company.netDebt * 1000000);
+            const debtToFcf = company.fcf > 0 ? (company.netDebt * 1000000) / (company.fcf * 1000000) : Infinity;
+            const evToFcf = company.fcf > 0 ? enterpriseValue / (company.fcf * 1000000) : Infinity;
+            
+            const debtRating = debtToFcf < 2.5 ? 'debt-healthy' : debtToFcf < 5 ? 'debt-manageable' : 'debt-concern';
+
+            let valuationHtml = priceScenarios.map(price => {
+                const result = calculateValuation(company, price);
+                const valueClass = result.isRisk ? 'bankruptcy-risk' : 'text-lime-300';
+                return `<tr class="border-t border-gray-700">
+                            <td class="text-gray-300 font-semibold">$${price}/oz</td>
+                            <td class="${valueClass}">${result.value}</td>
+                        </tr>`;
+            }).join('');
+
+            return `
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 flex flex-col h-full">
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                             <div>
+                                <h3 class="text-xl font-bold text-white">${company.name}</h3>
+                                <p class="text-md font-mono text-lime-400">${company.ticker}</p>
+                            </div>
+                             <div class="text-right">
+                                <p class="text-sm text-gray-400">Market Cap</p>
+                                <p class="font-bold text-lg text-white">${formatCurrency(company.marketCap)}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-gray-900/50 p-3 rounded-lg text-center">
+                                <p class="text-gray-400 text-sm">Net Debt / FCF</p>
+                                <p class="font-bold text-2xl mt-1 ${debtRating}">${isFinite(debtToFcf) ? debtToFcf.toFixed(2) + 'x' : 'N/A'}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-3 rounded-lg text-center">
+                                <p class="text-gray-400 text-sm">EV / FCF</p>
+                                <p class="font-bold text-2xl mt-1">${isFinite(evToFcf) ? evToFcf.toFixed(2) + 'x' : 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Management Quality & Notes</h4>
+                            <div class="text-sm bg-gray-900/50 p-3 rounded-lg">
+                                <p class="text-gray-300">${company.mgmtNotes}</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Intrinsic Value (Est. Market Cap)</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm valuation-table">
+                                    <thead><tr><th class="header-cell">Silver Price</th><th class="header-cell">Est. Value</th></tr></thead>
+                                    <tbody>${valuationHtml}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAllCards() {
+            const currentSilverPrice = parseFloat(silverPriceInput.value) || 0;
+            
+            companyData.sort((a, b) => a.name.localeCompare(b.name));
+            grid.innerHTML = '';
+            companyData.forEach(company => {
+                grid.innerHTML += renderCompanyCard(company, currentSilverPrice);
+            });
+        }
+
+        // --- INITIALIZATION ---
+        renderAllCards();
+    </script>
+</body>
+</html>
+

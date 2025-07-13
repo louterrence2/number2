@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Leverage Tracker v5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-glow {
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.1), 0 0 5px rgba(255, 255, 255, 0.1);
+        }
+        .btc-glow {
+             text-shadow: 0 0 15px rgba(247, 147, 26, 0.8);
+        }
+        .eth-glow {
+             text-shadow: 0 0 15px rgba(96, 165, 250, 0.8);
+        }
+        .leverage-high { color: #ef4444; } /* red-500 */
+        .leverage-mid { color: #f97316; } /* orange-500 */
+        .leverage-low { color: #22c55e; } /* green-500 */
+        .leverage-none { color: #6b7280; } /* gray-500 */
+        
+        .ratio-premium { color: #facc15; } /* yellow-400 */
+        .ratio-discount { color: #34d399; } /* emerald-400 */
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Crypto Leverage Tracker</h1>
+            <p class="text-lg text-gray-400">Analysis of public companies, their crypto holdings, and market valuation.</p>
+        </header>
+
+        <!-- Price Tickers -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div id="btc-price-card" class="p-6 bg-gray-800 rounded-2xl border border-gray-700 card-glow flex items-center justify-center space-x-4">
+                <h2 class="text-xl text-gray-300">Bitcoin Price</h2>
+                <p id="btc-price" class="text-4xl font-bold text-green-400 btc-glow">$0.00</p>
+            </div>
+            <div id="eth-price-card" class="p-6 bg-gray-800 rounded-2xl border border-gray-700 card-glow flex items-center justify-center space-x-4">
+                <h2 class="text-xl text-gray-300">Ethereum Price</h2>
+                <p id="eth-price" class="text-4xl font-bold text-green-400 eth-glow">$0.00</p>
+            </div>
+        </div>
+        
+        <!-- NEW: On-Chain & Market Sentiment Indicators -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-green-400 pb-2">On-Chain & Market Sentiment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Fear & Greed Index -->
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-center">
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">Fear & Greed Index</h3>
+                    <p class="text-6xl font-bold text-yellow-400">71</p>
+                    <p class="text-2xl font-semibold text-yellow-400 mb-3">Greed</p>
+                    <p class="text-sm text-gray-500">Measures market sentiment. High values ("Greed") can indicate a correction is due. Low values ("Fear") can signal a buying opportunity.</p>
+                </div>
+                <!-- Exchange Netflow -->
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-center">
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">Exchange Netflow (24h)</h3>
+                    <p class="text-6xl font-bold text-green-400">- $150M</p>
+                    <p class="text-2xl font-semibold text-green-400 mb-3">Net Outflow</p>
+                    <p class="text-sm text-gray-500">Tracks BTC moving on/off exchanges. Outflows are often bullish (coins moving to storage). Inflows can be bearish (intent to sell).</p>
+                </div>
+                <!-- Taker Buy/Sell Ratio -->
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-center">
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">Taker Buy/Sell Ratio</h3>
+                    <p class="text-6xl font-bold text-green-400">1.05</p>
+                    <p class="text-2xl font-semibold text-green-400 mb-3">Buyers in Control</p>
+                    <p class="text-sm text-gray-500">Ratio of aggressive buyers vs. sellers. A value > 1 suggests bullish sentiment, as buyers are actively taking offers.</p>
+                </div>
+            </div>
+             <p class="text-xs text-gray-600 text-center mt-2">*Sentiment data is illustrative and not real-time.</p>
+        </section>
+
+        <!-- Bitcoin Miners & Holders -->
+        <section>
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-yellow-400 pb-2">Bitcoin Miners & Major Holders</h2>
+            <div id="btc-companies-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- ETH Stakers & Diversified Companies -->
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-blue-400 pb-2">ETH Stakers & Diversified Companies</h2>
+            <div id="eth-companies-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- AI Analysis Section -->
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-indigo-400 pb-2">AI Analysis & Strategy Concepts</h2>
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-lg">
+                <h3 class="text-2xl font-bold text-indigo-300 mb-3">Understanding Put Options for Hedging</h3>
+                <p class="mb-4 text-gray-300">Some investors use put options to hedge against downside risk. A put option gives the owner the right, but not the obligation, to sell a stock at a predetermined price (the strike price) before a certain date.</p>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p class="font-bold text-red-400">Important: This tool does not provide financial advice. The content, including the AI Analysis section, is for educational and informational purposes only. Options trading is extremely risky. Consult with a qualified financial professional before making any investment decisions.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const btcCompanyData = [
+            { name: "MicroStrategy", ticker: "MSTR", btcHoldings: 226331, debt: 7_830_000_000, marketCap: 122_000_000_000, optionable: true, notes: "A software company holding BTC as a primary treasury reserve. Debt is from convertible notes used to acquire more BTC." },
+            { name: "Marathon Digital", ticker: "MARA", btcHoldings: 17631, debt: 715_000_000, marketCap: 6_700_000_000, optionable: true, notes: "Debt consists of convertible senior notes, not directly collateralized by Bitcoin holdings." },
+            { name: "Riot Platforms", ticker: "RIOT", btcHoldings: 9084, debt: 0, marketCap: 4_400_000_000, optionable: true, notes: "Maintains a zero-debt position according to latest reports." },
+            { name: "Hut 8 Corp", ticker: "HUT", btcHoldings: 9102, debt: 199_000_000, marketCap: 2_500_000_000, optionable: true, notes: "Has credit facilities which may be backed by assets including crypto." },
+            { name: "CleanSpark", ticker: "CLSK", btcHoldings: 5021, debt: 15_800_000, marketCap: 3_500_000_000, optionable: true, notes: "Minimal debt relative to its holdings, primarily related to equipment financing." },
+            { name: "Core Scientific", ticker: "CORZ", btcHoldings: 2167, debt: 565_000_000, marketCap: 3_800_000_000, optionable: true, notes: "Data is based on their financial restructuring post-bankruptcy." },
+            { name: "Bitfarms", ticker: "BITF", btcHoldings: 830, debt: 33_000_000, marketCap: 600_000_000, optionable: true, notes: "Actively managed its debt, paying down significant portions over the last year." },
+            { name: "Cipher Mining", ticker: "CIFR", btcHoldings: 1222, debt: 0, marketCap: 2_200_000_000, optionable: true, notes: "Reports having no outstanding debt." }
+        ];
+
+        const ethCompanyData = [
+            { name: "HIVE Digital", ticker: "HIVE", btcHoldings: 2201, ethHoldings: 0, debt: 55_160_000, marketCap: 500_000_000, optionable: true, notes: "Primarily a BTC miner. Previously mined ETH. Now also focuses on high-performance computing (AI)." },
+            { name: "Bit Digital", ticker: "BTBT", btcHoldings: 417, ethHoldings: 24434, debt: 0, marketCap: 500_000_000, optionable: true, notes: "Actively pivoting from BTC mining to ETH staking and AI. Plans to convert remaining BTC to ETH." }
+        ];
+
+        // --- FUNCTIONS ---
+        const btcGrid = document.getElementById('btc-companies-grid');
+        const ethGrid = document.getElementById('eth-companies-grid');
+        const btcPriceElem = document.getElementById('btc-price');
+        const ethPriceElem = document.getElementById('eth-price');
+
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
+        }
+        
+        function getLeverageClass(ratio) {
+            if (ratio > 0.75) return 'leverage-high';
+            if (ratio > 0.25) return 'leverage-mid';
+            if (ratio > 0) return 'leverage-low';
+            return 'leverage-none';
+        }
+
+        function getPremiumClass(ratio) {
+            return ratio > 1.0 ? 'ratio-premium' : 'ratio-discount';
+        }
+
+        function renderCard(company, btcPrice, ethPrice) {
+            const btcValue = (company.btcHoldings || 0) * btcPrice;
+            const ethValue = (company.ethHoldings || 0) * ethPrice;
+            const totalHoldingsValue = btcValue + ethValue;
+            
+            const leverageRatio = totalHoldingsValue > 0 ? company.debt / totalHoldingsValue : 0;
+            const mcRatio = totalHoldingsValue > 0 ? company.marketCap / totalHoldingsValue : 0;
+
+            let holdingsHtml = '';
+            if (company.btcHoldings > 0) {
+                holdingsHtml += `<div><p class="text-gray-400">BTC Holdings:</p><p class="font-semibold text-white">${company.btcHoldings.toLocaleString()} BTC</p></div>`;
+            }
+            if (company.ethHoldings > 0) {
+                holdingsHtml += `<div><p class="text-gray-400">ETH Holdings:</p><p class="font-semibold text-white">${company.ethHoldings.toLocaleString()} ETH</p></div>`;
+            }
+
+            return `
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 flex flex-col h-full">
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">${company.name}</h3>
+                                <p class="text-lg font-mono text-green-400">${company.ticker}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-400">Options?</p>
+                                <p class="font-bold text-lg ${company.optionable ? 'text-green-400' : 'text-red-400'}">${company.optionable ? 'Yes' : 'No'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 text-base sm:text-lg mt-4">
+                            ${holdingsHtml}
+                            <div><p class="text-gray-400">Est. Total Holdings Value:</p><p class="font-semibold text-white">${formatCurrency(totalHoldingsValue)}</p></div>
+                            <div><p class="text-gray-400">Market Cap:</p><p class="font-semibold text-white">${formatCurrency(company.marketCap)}</p></div>
+                            <div class="grid grid-cols-2 gap-4 pt-2">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Leverage Ratio:</p>
+                                    <p class="font-bold text-xl ${getLeverageClass(leverageRatio)}">${leverageRatio.toFixed(2)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">MC / Holdings Ratio:</p>
+                                    <p class="font-bold text-xl ${getPremiumClass(mcRatio)}">${mcRatio.toFixed(2)}x</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                         <p class="text-sm text-gray-500 italic">${company.notes}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function updateData() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                const btcPrice = data.bitcoin.usd;
+                const ethPrice = data.ethereum.usd;
+
+                btcPriceElem.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(btcPrice);
+                ethPriceElem.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(ethPrice);
+
+                btcGrid.innerHTML = '';
+                btcCompanyData.forEach(company => btcGrid.innerHTML += renderCard(company, btcPrice, ethPrice));
+                
+                ethGrid.innerHTML = '';
+                ethCompanyData.forEach(company => ethGrid.innerHTML += renderCard(company, btcPrice, ethPrice));
+
+            } catch (error) {
+                console.error("Failed to fetch crypto prices:", error);
+                btcPriceElem.textContent = "Error";
+                ethPriceElem.textContent = "Error";
+                btcGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">Failed to load data. API may be temporarily unavailable.</p>`;
+                ethGrid.innerHTML = '';
+            }
+        }
+
+        updateData();
+        setInterval(updateData, 60000);
+    </script>
+</body>
+</html>
+

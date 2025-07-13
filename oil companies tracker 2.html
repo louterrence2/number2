@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E&P Oil Producers Value Tracker (Definitive)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        .rating-awesome { background-color: #34d399; color: #064e3b; } /* emerald-400 / emerald-800 */
+        .rating-great { background-color: #a3e635; color: #3f6212; } /* lime-400 / lime-800 */
+        .rating-good { background-color: #facc15; color: #713f12; } /* yellow-400 / amber-800 */
+        .rating-okay { background-color: #fb923c; color: #7c2d12; } /* orange-400 / orange-800 */
+        .rating-bad { background-color: #f87171; color: #7f1d1d; } /* red-400 / red-800 */
+
+        .card-awesome {
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        .card-awesome::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 180deg at 50% 50%,
+                #34d399, #a3e635, #facc15, #34d399
+            );
+            animation: rotate-gradient 4s linear infinite;
+        }
+        .card-awesome .card-content {
+            position: relative;
+            background: #1f2937; /* gray-800 */
+            border-radius: 0.75rem; /* 12px */
+            padding: 1.5rem; /* 24px */
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes rotate-gradient {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">E&P Oil Producers Value Tracker</h1>
+            <p class="text-lg text-gray-400">A Definitive Analysis of Valuation, Debt, and Outlook.</p>
+        </header>
+        
+        <!-- Companies Grid -->
+        <div id="companies-grid" class="space-y-6">
+            <!-- Company cards will be injected here by JavaScript -->
+        </div>
+        
+        <!-- Disclaimer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p><strong>Disclaimer:</strong> This tool is for educational and informational purposes only and does not constitute financial advice. Data is compiled from the latest available public financial reports and market data. The AI Outlook & Rating is a synthesized analysis based on this data and should not be the sole basis for any investment decision. Always conduct your own due diligence and consult a qualified financial professional.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const companyData = [
+            { 
+                name: "Parex Resources", ticker: "PXT.TO", type: "International E&P",
+                marketCap: "1.8B", latestPrice: 16.50, boe_d: 55000,
+                netDebt: -200, ebitda: 800, fcf: 450,
+                outlook: "A rare debt-free E&P with a huge net cash position. Management is laser-focused on shareholder returns via aggressive buybacks. Trades at a deep discount due to perceived political risk, creating a compelling value proposition.",
+                rating: "Awesome",
+                value_bear: {low: 12.00, high: 14.00}, value_norm: {low: 18.00, high: 22.00}, value_bull: {low: 25.00, high: 30.00}
+            },
+            { 
+                name: "Peyto Exploration", ticker: "PEY.TO", type: "Canadian Gas E&P",
+                marketCap: "1.9B", latestPrice: 10.50, boe_d: 115000,
+                netDebt: 900, ebitda: 850, fcf: 350,
+                outlook: "Widely regarded as the lowest-cost, most efficient natural gas producer in North America. Disciplined management, high dividend yield, and a history of creating value. A best-in-class operator trading at a reasonable price.",
+                rating: "Awesome",
+                value_bear: {low: 8.00, high: 10.00}, value_norm: {low: 12.00, high: 15.00}, value_bull: {low: 17.00, high: 21.00}
+            },
+            { 
+                name: "Vermilion Energy", ticker: "VET", type: "International E&P",
+                marketCap: "2.0B", latestPrice: 12.00, boe_d: 85000,
+                netDebt: 1180, ebitda: 1400, fcf: 500,
+                outlook: "A contrarian play on a rebound in European natural gas prices. The stock has been punished as gas prices normalized, but management used windfall profits to aggressively pay down debt. A significant re-rating is likely if they hit debt targets and boost returns.",
+                rating: "Great",
+                value_bear: {low: 9.00, high: 11.00}, value_norm: {low: 15.00, high: 18.00}, value_bull: {low: 22.00, high: 28.00}
+            },
+            { 
+                name: "SM Energy", ticker: "SM", type: "US E&P",
+                marketCap: "5.5B", latestPrice: 48.00, boe_d: 150000,
+                netDebt: 1300, ebitda: 2000, fcf: 700,
+                outlook: "A high-quality US operator with top-tier assets. Management has successfully transitioned to a sustainable model of modest growth plus significant free cash flow for shareholder returns. A reliable, well-run company.",
+                rating: "Great",
+                value_bear: {low: 35.00, high: 40.00}, value_norm: {low: 55.00, high: 65.00}, value_bull: {low: 75.00, high: 90.00}
+            },
+            { 
+                name: "Surge Energy", ticker: "SGY.TO", type: "Canadian E&P",
+                marketCap: "0.7B", latestPrice: 7.50, boe_d: 22500,
+                netDebt: 245, ebitda: 350, fcf: 100,
+                outlook: "A small-cap producer highly leveraged to oil prices. Management has focused on debt reduction and initiating a sustainable dividend. If oil prices remain strong, its free cash flow yield is very attractive.",
+                rating: "Good",
+                value_bear: {low: 5.00, high: 6.50}, value_norm: {low: 9.00, high: 11.00}, value_bull: {low: 13.00, high: 16.00}
+            },
+            { 
+                name: "Baytex Energy", ticker: "BTE", type: "Canadian E&P",
+                marketCap: "3.0B", latestPrice: 3.50, boe_d: 155000,
+                netDebt: 1450, ebitda: 1200, fcf: 400,
+                outlook: "A turnaround story. The Ranger Oil acquisition increased scale and exposure to the high-quality Eagle Ford. Management is now focused on paying down debt. Success here could lead to a re-rating.",
+                rating: "Good",
+                value_bear: {low: 2.50, high: 3.00}, value_norm: {low: 4.50, high: 5.50}, value_bull: {low: 6.50, high: 8.00}
+            },
+            { 
+                name: "Chord Energy", ticker: "CHRD", type: "US E&P",
+                marketCap: "7.0B", latestPrice: 165.00, boe_d: 175000,
+                netDebt: 750, ebitda: 2500, fcf: 1000,
+                outlook: "A high-quality operator in the Williston Basin with a solid balance sheet and a commitment to returning capital via a base + variable dividend. A stable, reliable choice for exposure to US oil.",
+                rating: "Okay",
+                value_bear: {low: 130.00, high: 145.00}, value_norm: {low: 180.00, high: 200.00}, value_bull: {low: 220.00, high: 240.00}
+            },
+            { 
+                name: "Canadian Natural Res.", ticker: "CNQ", type: "Integrated Oil Sands",
+                marketCap: "80B", latestPrice: 78.00, boe_d: 1300000,
+                netDebt: 9000, ebitda: 25000, fcf: 8000,
+                outlook: "Considered one of the best-run energy companies in the world. The stock is never 'cheap' because the market recognizes its quality. A core holding for any energy portfolio, but not a 'skyrocket' candidate due to its large size.",
+                rating: "Bad",
+                value_bear: {low: 65.00, high: 70.00}, value_norm: {low: 85.00, high: 95.00}, value_bull: {low: 100.00, high: 110.00}
+            }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('companies-grid');
+
+        // --- FUNCTIONS ---
+        function formatCurrency(num, isPrice = false) {
+            if (isPrice) {
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+            }
+            if (Math.abs(num) >= 1.0e+9) return (num / 1.0e+9).toFixed(1) + 'B';
+            if (Math.abs(num) >= 1.0e+6) return (num / 1.0e+6).toFixed(1) + 'M';
+            return num.toFixed(0);
+        }
+        
+        function renderCompanyCard(company) {
+            const ratingClass = `rating-${company.rating.toLowerCase()}`;
+            const cardHighlightClass = company.rating === 'Awesome' ? 'card-awesome' : 'bg-gray-800 border-gray-700';
+            const contentClass = company.rating === 'Awesome' ? 'card-content' : 'p-6';
+
+            return `
+                <div class="rounded-2xl border ${cardHighlightClass}">
+                    <div class="${contentClass} flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                             <div>
+                                <h3 class="text-2xl font-bold text-white">${company.name}</h3>
+                                <p class="text-md font-mono text-lime-400">${company.ticker}</p>
+                            </div>
+                             <div class="text-right">
+                                <p class="text-2xl font-bold text-white">${formatCurrency(company.latestPrice, true)}</p>
+                                <p class="text-sm text-gray-400">Latest Price</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Valuation Spectrum (Est. Intrinsic Value Range)</h4>
+                            <div class="flex justify-between items-center text-center bg-gray-900/50 p-3 rounded-lg">
+                                <div>
+                                    <p class="text-sm text-red-400">Bear Case</p>
+                                    <p class="text-lg font-bold">${formatCurrency(company.value_bear.low, true)} - ${formatCurrency(company.value_bear.high, true)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-yellow-300">Normal Case</p>
+                                    <p class="text-xl font-bold">${formatCurrency(company.value_norm.low, true)} - ${formatCurrency(company.value_norm.high, true)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-green-400">Bull Case</p>
+                                    <p class="text-lg font-bold">${formatCurrency(company.value_bull.low, true)} - ${formatCurrency(company.value_bull.high, true)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Key Financials</h4>
+                             <div class="text-sm space-y-1 bg-gray-900/50 p-3 rounded-lg">
+                                <div class="grid grid-cols-2 gap-2"><span>Market Cap:</span><span class="font-mono text-white text-right">${company.marketCap}</span></div>
+                                <div class="grid grid-cols-2 gap-2"><span>Avg. FCF/yr:</span><span class="font-mono text-white text-right">${formatCurrency(company.fcf * 1000000)}</span></div>
+                                <div class="grid grid-cols-2 gap-2"><span>Net Debt:</span><span class="font-mono text-white text-right">${formatCurrency(company.netDebt * 1000000)}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-grow">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">AI Outlook & Rating</h4>
+                            <div class="bg-gray-900/50 p-4 rounded-lg">
+                                <div class="text-gray-300">${company.outlook}</div>
+                                <div class="text-center mt-4">
+                                    <span class="px-4 py-1 text-lg font-bold rounded-full ${ratingClass}">${company.rating}</span>
+                                    <p class="text-xs text-gray-500 mt-1">Valuation & Outlook Grade</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAllCards() {
+            const ratingOrder = { 'Awesome': 1, 'Great': 2, 'Good': 3, 'Okay': 4, 'Bad': 5 };
+            companyData.sort((a, b) => ratingOrder[a.rating] - ratingOrder[b.rating] || a.name.localeCompare(b.name));
+            
+            grid.innerHTML = '';
+            companyData.forEach(company => {
+                grid.innerHTML += renderCompanyCard(company);
+            });
+        }
+
+        // --- INITIALIZATION ---
+        renderAllCards();
+    </script>
+</body>
+</html>
+

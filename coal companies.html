@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coal Producers Intrinsic Value Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .valuation-table td, .valuation-table th {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid #374151; /* gray-700 */
+        }
+        .header-cell {
+            background-color: #374151; /* gray-700 */
+            font-weight: 600;
+        }
+        .undervalued { color: #34d399; } /* emerald-400 */
+        .fair-value { color: #facc15; } /* yellow-400 */
+        .overvalued { color: #f87171; } /* red-400 */
+        .debt-healthy { color: #34d399; }
+        .debt-manageable { color: #facc15; }
+        .debt-concern { color: #f87171; }
+        .bankruptcy-risk {
+            color: #ef4444; /* red-500 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Coal Producers Intrinsic Value Tracker</h1>
+            <p class="text-lg text-gray-400">Valuation Sensitivity to Metallurgical and Thermal Coal Prices.</p>
+        </header>
+        
+        <!-- Companies Grid -->
+        <div id="companies-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Company cards will be injected here by JavaScript -->
+        </div>
+        
+        <!-- Model Explanation -->
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-indigo-400 pb-2">Valuation Model Explained</h2>
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-lg">
+                <h3 class="text-2xl font-bold text-indigo-300 mb-3">How the Intrinsic Value Model Works</h3>
+                <p class="mb-4 text-gray-300">The model estimates a company's intrinsic value (market cap) at different coal price scenarios using a standard EV/EBITDA methodology. This shows how sensitive a company's value is to market price changes.</p>
+                <ol class="list-decimal list-inside space-y-3 text-gray-400">
+                    <li><strong class="text-white">Project EBITDA Change:</strong> It calculates the change in earnings by multiplying a company's annual production (tons) by the change in coal price from a baseline ($250/ton for Met, $130/ton for Thermal).</li>
+                    <li><strong class="text-white">Determine New Enterprise Value:</strong> The new projected EBITDA is multiplied by a standard industry valuation multiple (3.5x for coal) to find a new total company value (Enterprise Value).</li>
+                    <li><strong class="text-white">Find Final Market Cap:</strong> It subtracts the company's net debt from the Enterprise Value. If the result is negative, it means the company's debt would be greater than its entire value at that price, indicating a high risk of bankruptcy.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p><strong>Disclaimer:</strong> Company financial data is compiled from the latest available public financial reports and is not real-time. The valuation model uses standard assumptions and is for educational purposes only. This does not constitute financial advice. Always conduct your own due diligence.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Production in millions of tons, financials in USD millions.
+        const companyData = [
+            { name: "Peabody Energy", ticker: "BTU", metTons: 18, thermalTons: 110, netDebt: 200, ebitda: 2800, marketCap: 3000, notes: "Largest US coal producer with significant thermal and met coal operations." },
+            { name: "Arch Resources", ticker: "ARCH", metTons: 9, thermalTons: 0, netDebt: -450, ebitda: 1100, marketCap: 3200, notes: "Pure-play metallurgical coal producer with strong net cash position." },
+            { name: "Alpha Metallurgical", ticker: "AMR", metTons: 16, thermalTons: 1, netDebt: -150, ebitda: 1300, marketCap: 2500, notes: "Primarily a metallurgical coal producer for the steel industry." },
+            { name: "Warrior Met Coal", ticker: "HCC", metTons: 7.5, thermalTons: 0, netDebt: 250, ebitda: 800, marketCap: 1500, notes: "Pure-play metallurgical coal producer in Alabama." },
+            { name: "Ramaco Resources", ticker: "METC", metTons: 4, thermalTons: 0, netDebt: 45, ebitda: 100, marketCap: 840, notes: "US metallurgical coal producer, also developing rare earth element assets." },
+            { name: "SunCoke Energy", ticker: "SXC", metTons: 5.9, thermalTons: 0, netDebt: 495, ebitda: 263, marketCap: 722, notes: "Not a miner. Produces coke from met coal for steel industry. Valuation based on coke production." },
+            { name: "Consol Energy", ticker: "CEIX", metTons: 0, thermalTons: 26, netDebt: 400, ebitda: 750, marketCap: 1800, notes: "Focused on high-BTU thermal coal from the PAMC complex." },
+            { name: "Alliance Resource", ticker: "ARLP", metTons: 0, thermalTons: 37, netDebt: 300, ebitda: 900, marketCap: 2200, notes: "Large thermal coal producer in the Illinois Basin and Appalachia." },
+            { name: "Whitehaven Coal", ticker: "WHC.AX", metTons: 6, thermalTons: 15, netDebt: 1100, ebitda: 1500, marketCap: 5500, notes: "Major Australian producer of high-quality thermal and semi-soft coking coal." },
+            { name: "Yancoal Australia", ticker: "YAL.AX", metTons: 2, thermalTons: 31, netDebt: -1500, ebitda: 1650, marketCap: 5500, notes: "Australia's largest pure-play coal producer with a strong net cash position." },
+            { name: "Coronado Global", ticker: "CRN.AX", metTons: 16, thermalTons: 0, netDebt: 400, ebitda: 150, marketCap: 175, notes: "Met coal producer in Australia & US. Currently facing financial distress." }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('companies-grid');
+
+        // --- FUNCTIONS ---
+        function formatCurrency(num) {
+            if (Math.abs(num) >= 1.0e+9) return (num / 1.0e+9).toFixed(1) + 'B';
+            if (Math.abs(num) >= 1.0e+6) return (num / 1.0e+6).toFixed(1) + 'M';
+            return num.toFixed(2);
+        }
+
+        function calculateValuation(company, metPrice, thermalPrice) {
+            const BASE_MET_PRICE = 250;
+            const BASE_THERMAL_PRICE = 130;
+            const EV_EBITDA_MULTIPLE = 3.5;
+            const FLOW_THROUGH_RATE = 0.80; 
+
+            const metPriceChange = metPrice - BASE_MET_PRICE;
+            const thermalPriceChange = thermalPrice - BASE_THERMAL_PRICE;
+
+            const changeInEbitda = 
+                (company.metTons * 1000000 * metPriceChange * FLOW_THROUGH_RATE) +
+                (company.thermalTons * 1000000 * thermalPriceChange * FLOW_THROUGH_RATE);
+
+            const projectedEbitda = (company.ebitda * 1000000) + changeInEbitda;
+            const projectedEnterpriseValue = projectedEbitda * EV_EBITDA_MULTIPLE;
+            
+            if (projectedEnterpriseValue < (company.netDebt * 1000000)) {
+                return { value: 'Bankruptcy Risk', isRisk: true };
+            }
+            const projectedMarketCap = projectedEnterpriseValue - (company.netDebt * 1000000);
+            return { value: formatCurrency(projectedMarketCap), isRisk: false };
+        }
+
+        function renderCompanyCard(company) {
+            const metScenarios = [200, 250, 300];
+            const thermalScenarios = [80, 100, 120, 140];
+
+            let tableHeaderHtml = '<th class="header-cell">Met Price</th>';
+            thermalScenarios.forEach(price => {
+                tableHeaderHtml += `<th class="header-cell">$${price} Thermal</th>`;
+            });
+
+            let tableBodyHtml = '';
+            metScenarios.forEach(metPrice => {
+                let rowHtml = `<td class="header-cell">$${metPrice}</td>`;
+                thermalScenarios.forEach(thermalPrice => {
+                    const result = calculateValuation(company, metPrice, thermalPrice);
+                    const valueClass = result.isRisk ? 'bankruptcy-risk' : 'text-lime-300';
+                    rowHtml += `<td class="${valueClass}">${result.value}</td>`;
+                });
+                tableBodyHtml += `<tr>${rowHtml}</tr>`;
+            });
+
+            return `
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 flex flex-col h-full">
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                             <div>
+                                <h3 class="text-xl font-bold text-white">${company.name}</h3>
+                                <p class="text-md font-mono text-lime-400">${company.ticker}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Production (Million Tons/yr)</h4>
+                            <div class="text-sm space-y-1 bg-gray-900/50 p-3 rounded-lg">
+                                <div class="grid grid-cols-2 gap-2"><span>Metallurgical:</span><span class="font-mono text-white text-right">${company.metTons}</span></div>
+                                <div class="grid grid-cols-2 gap-2"><span>Thermal:</span><span class="font-mono text-white text-right">${company.thermalTons}</span></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Intrinsic Value (Est. Market Cap)</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm valuation-table">
+                                    <thead><tr>${tableHeaderHtml}</tr></thead>
+                                    <tbody>${tableBodyHtml}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                         <p class="text-xs text-gray-500 italic">${company.notes}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAllCards() {
+            companyData.sort((a, b) => a.name.localeCompare(b.name));
+            grid.innerHTML = '';
+            companyData.forEach(company => {
+                grid.innerHTML += renderCompanyCard(company);
+            });
+        }
+
+        // --- INITIALIZATION ---
+        renderAllCards();
+    </script>
+</body>
+</html>
+

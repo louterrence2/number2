@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E&P Oil Producers Value Tracker (Definitive)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .valuation-table td, .valuation-table th {
+            padding: 0.5rem 0.75rem;
+            text-align: right;
+        }
+        .valuation-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .undervalued { color: #34d399; } /* emerald-400 */
+        .fair-value { color: #facc15; } /* yellow-400 */
+        .overvalued { color: #f87171; } /* red-400 */
+        .debt-healthy { color: #34d399; }
+        .debt-manageable { color: #facc15; }
+        .debt-concern { color: #f87171; }
+        .bankruptcy-risk {
+            color: #ef4444; /* red-500 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">E&P Oil Producers Value Tracker</h1>
+            <p class="text-lg text-gray-400">Valuation & Debt Analysis with Price Sensitivity.</p>
+        </header>
+        
+        <!-- Companies Grid -->
+        <div id="companies-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Company cards will be injected here by JavaScript -->
+        </div>
+        
+        <!-- AI Model Explanation -->
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-white mb-4 border-b-2 border-indigo-400 pb-2">Valuation Model Explained</h2>
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 text-lg">
+                <h3 class="text-2xl font-bold text-indigo-300 mb-3">How the Price Sensitivity Model Works</h3>
+                <p class="mb-4 text-gray-300">The model estimates a company's market cap at different oil prices using a standard industry method. Here's the step-by-step logic:</p>
+                <ol class="list-decimal list-inside space-y-3 text-gray-400">
+                    <li><strong class="text-white">Calculate Price Change:</strong> It starts with the difference between a target oil price (e.g., $90) and a baseline price ($80), which is assumed to be the price environment for the reported earnings.</li>
+                    <li><strong class="text-white">Find Unhedged Production:</strong> It calculates the barrels of oil per day that are <span class="text-yellow-300">not</span> protected by hedges, as this is the production exposed to price changes.</li>
+                    <li><strong class="text-white">Project Revenue Change:</strong> It multiplies the unhedged barrels by the price change over a full year to estimate the total change in annual revenue.</li>
+                    <li><strong class="text-white">Estimate EBITDA Change:</strong> Not all revenue becomes profit. The model assumes 75% of the revenue change "flows through" to become cash flow (EBITDA). This is added to (or subtracted from) the company's last reported annual EBITDA.</li>
+                    <li><strong class="text-white">Determine New Enterprise Value:</strong> The new projected EBITDA is multiplied by a standard industry valuation multiple (4.5x) to get a new total company value (Enterprise Value).</li>
+                    <li><strong class="text-white">Find Final Market Cap:</strong> Finally, it subtracts the company's net debt from the new Enterprise Value to arrive at the estimated value for shareholders (Market Cap). If this value is negative, it indicates a high risk of bankruptcy as the company's value no longer covers its debt.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p><strong>Disclaimer:</strong> Company financial data (production, debt, EBITDA) is compiled from the latest available public financial reports (Q1/Q2 2024) and is not real-time. The valuation model uses standard assumptions and is for educational purposes only. This does not constitute financial advice. Always conduct your own due diligence.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const companyData = [
+            { name: "Surge Energy", ticker: "SGY.TO", boe_d: 22500, oil_d: 16000, ngl_d: 2500, gas_d: 4000, netDebt: 245000000, ebitda: 350000000, hedgedPct: 45, marketCap: 700000000, notes: "Canadian producer focused on light oil." },
+            { name: "Vermilion Energy", ticker: "VET", boe_d: 85000, oil_d: 35000, ngl_d: 10000, gas_d: 40000, netDebt: 1180000000, ebitda: 1400000000, hedgedPct: 30, marketCap: 2000000000, notes: "Diversified assets with valuable European gas exposure." },
+            { name: "Berry Corp", ticker: "BRY", boe_d: 23000, oil_d: 21000, ngl_d: 500, gas_d: 1500, netDebt: 385000000, ebitda: 300000000, hedgedPct: 60, marketCap: 650000000, notes: "California-focused producer, primarily heavy oil." },
+            { name: "Chord Energy", ticker: "CHRD", boe_d: 175000, oil_d: 95000, ngl_d: 40000, gas_d: 40000, netDebt: 750000000, ebitda: 2500000000, hedgedPct: 40, marketCap: 7000000000, notes: "Major Williston Basin producer." },
+            { name: "Parex Resources", ticker: "PXT.TO", boe_d: 55000, oil_d: 53000, ngl_d: 1000, gas_d: 1000, netDebt: -200000000, ebitda: 800000000, hedgedPct: 5, marketCap: 1800000000, notes: "Colombia-focused, debt-free, with significant net cash." },
+            { name: "Civitas Resources", ticker: "CIVI", boe_d: 325000, oil_d: 160000, ngl_d: 80000, gas_d: 85000, netDebt: 3900000000, ebitda: 3200000000, hedgedPct: 55, marketCap: 7500000000, notes: "Large operator in DJ and Permian Basins." },
+            { name: "Can. Natural Res.", ticker: "CNQ", boe_d: 1300000, oil_d: 800000, ngl_d: 150000, gas_d: 350000, netDebt: 9000000000, ebitda: 25000000000, hedgedPct: 15, marketCap: 80000000000, notes: "One of Canada's largest, diversified producers." },
+            { name: "Cenovus Energy", ticker: "CVE", boe_d: 800000, oil_d: 600000, ngl_d: 80000, gas_d: 120000, netDebt: 6000000000, ebitda: 14000000000, hedgedPct: 35, marketCap: 35000000000, notes: "Major integrated Canadian oil company." },
+            { name: "Suncor Energy", ticker: "SU", boe_d: 785000, oil_d: 650000, ngl_d: 60000, gas_d: 75000, netDebt: 9500000000, ebitda: 18000000000, hedgedPct: 20, marketCap: 50000000000, notes: "Major integrated oil sands and refining company." },
+            { name: "Baytex Energy", ticker: "BTE", boe_d: 155000, oil_d: 85000, ngl_d: 35000, gas_d: 35000, netDebt: 1450000000, ebitda: 1200000000, hedgedPct: 50, marketCap: 3000000000, notes: "Acquired Ranger Oil, increasing scale and Eagle Ford exposure." }
+        ];
+
+        // --- FUNCTIONS ---
+        const grid = document.getElementById('companies-grid');
+
+        function formatCurrency(num) {
+            if (Math.abs(num) >= 1.0e+9) return (num / 1.0e+9).toFixed(2) + 'B';
+            if (Math.abs(num) >= 1.0e+6) return (num / 1.0e+6).toFixed(2) + 'M';
+            return num.toFixed(2);
+        }
+
+        function getDebtRating(ratio) {
+            if (ratio < 1.5) return { text: 'Healthy', class: 'debt-healthy' };
+            if (ratio < 2.5) return { text: 'Manageable', class: 'debt-manageable' };
+            return { text: 'High Concern', class: 'debt-concern' };
+        }
+
+        function calculateValuation(company, targetOilPrice) {
+            const BASE_WTI_PRICE = 80;
+            const EV_EBITDA_MULTIPLE = 4.5;
+            const FLOW_THROUGH_RATE = 0.75;
+            const priceChangePerBarrel = targetOilPrice - BASE_WTI_PRICE;
+            const unhedgedOilProduction = company.oil_d * (1 - (company.hedgedPct / 100));
+            const changeInEbitda = unhedgedOilProduction * priceChangePerBarrel * 365 * FLOW_THROUGH_RATE;
+            const projectedEbitda = company.ebitda + changeInEbitda;
+            const projectedEnterpriseValue = projectedEbitda * EV_EBITDA_MULTIPLE;
+            
+            if (projectedEnterpriseValue < company.netDebt) {
+                return { value: 'Bankruptcy Risk', isRisk: true };
+            }
+            const projectedMarketCap = projectedEnterpriseValue - company.netDebt;
+            return { value: formatCurrency(projectedMarketCap), isRisk: false };
+        }
+
+        function renderCompanyCard(company) {
+            const enterpriseValue = company.marketCap + company.netDebt;
+            const ev_per_boe = enterpriseValue / company.boe_d;
+            const valuationClass = ev_per_boe < 35000 ? 'undervalued' : ev_per_boe < 50000 ? 'fair-value' : 'overvalued';
+            const debtToEbitda = company.ebitda > 0 ? company.netDebt / company.ebitda : 0;
+            const debtRating = getDebtRating(debtToEbitda);
+
+            const priceScenarios = [50, 60, 70, 80, 90];
+            let valuationHtml = priceScenarios.map(price => {
+                const result = calculateValuation(company, price);
+                const valueClass = result.isRisk ? 'bankruptcy-risk' : 'text-lime-300 font-mono';
+                return `
+                    <tr class="border-t border-gray-700">
+                        <td class="text-gray-300 font-semibold">$${price} WTI</td>
+                        <td class="${valueClass}">${result.value}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            return `
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 flex flex-col h-full">
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                             <div>
+                                <h3 class="text-xl font-bold text-white">${company.name}</h3>
+                                <p class="text-md font-mono text-lime-400">${company.ticker}</p>
+                            </div>
+                             <div class="text-right">
+                                <p class="text-sm text-gray-400">Hedged</p>
+                                <p class="font-bold text-lg text-white">${company.hedgedPct}%</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-gray-900/50 p-3 rounded-lg text-center">
+                                <p class="text-gray-400 text-sm">EV / BOE/d</p>
+                                <p class="font-bold text-2xl mt-1 ${valuationClass}">${formatCurrency(ev_per_boe)}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-3 rounded-lg text-center">
+                                <p class="text-gray-400 text-sm">Debt / EBITDA</p>
+                                <p class="font-bold text-2xl mt-1 ${debtRating.class}">${debtToEbitda.toFixed(2)}x</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Production (BOE/d)</h4>
+                            <div class="text-sm space-y-1 bg-gray-900/50 p-3 rounded-lg">
+                                <div class="grid grid-cols-2 gap-2"><span>Oil:</span><span class="font-mono text-white text-right">${company.oil_d.toLocaleString()}</span></div>
+                                <div class="grid grid-cols-2 gap-2"><span>NGL:</span><span class="font-mono text-white text-right">${company.ngl_d.toLocaleString()}</span></div>
+                                <div class="grid grid-cols-2 gap-2"><span>Gas:</span><span class="font-mono text-white text-right">${company.gas_d.toLocaleString()}</span></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-300 mb-2">Valuation at WTI Prices</h4>
+                            <table class="w-full text-sm valuation-table">
+                                <thead>
+                                    <tr class="text-left"><th class="p-2 font-normal text-gray-400">Scenario</th><th class="p-2 font-normal text-gray-400 text-right">Est. Market Cap</th></tr>
+                                </thead>
+                                <tbody>${valuationHtml}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                         <p class="text-xs text-gray-500 italic">${company.notes}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAllCards() {
+            companyData.sort((a, b) => a.name.localeCompare(b.name));
+            grid.innerHTML = '';
+            companyData.forEach(company => {
+                grid.innerHTML += renderCompanyCard(company);
+            });
+        }
+
+        // --- INITIALIZATION ---
+        renderAllCards();
+    </script>
+</body>
+</html>
+
